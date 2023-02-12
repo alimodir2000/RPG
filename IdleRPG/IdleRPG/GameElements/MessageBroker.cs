@@ -1,48 +1,40 @@
-﻿using System.Reactive.Subjects;
+﻿using IdleRPG.GameEvents;
+using System.Reactive.Subjects;
+using System.Xml.Serialization;
 
 namespace IdleRPG.GameElements
 {
-    public class MessageBroker
+    public class EventBroker : IObservable<GameEvent>
     {
-        private static Subject<>
-        private static MessageBroker instance;
+        private static Subject<GameEvent> _subscribers;
+        private static EventBroker _instance;       
 
-        private Dictionary<Type, List<Action<object>>> subscribers = new Dictionary<Type, List<Action<object>>>();
+        private EventBroker()
+        {
+            _subscribers = new Subject<GameEvent>();
+        }
 
-        private MessageBroker() { }
-
-        public static MessageBroker Instance
+        public static EventBroker Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new MessageBroker();
+                    _instance = new EventBroker();
                 }
-                return instance;
+                return _instance;
             }
         }
 
-        public void Subscribe<T>(Action<object> action)
+        
+        public IDisposable Subscribe(IObserver<GameEvent> observer)
         {
-            Type type = typeof(T);
-            if (!subscribers.ContainsKey(type))
-            {
-                subscribers[type] = new List<Action<object>>();
-            }
-            subscribers[type].Add(action);
+            return _subscribers.Subscribe(observer); 
         }
 
-        public void Publish<T>(T message)
+        public void Publish(GameEvent gameEvent)
         {
-            Type type = typeof(T);
-            if (subscribers.ContainsKey(type))
-            {
-                foreach (Action<object> subscriber in subscribers[type])
-                {
-                    subscriber(message);
-                }
-            }
+            _subscribers.OnNext(gameEvent);
         }
     }
 

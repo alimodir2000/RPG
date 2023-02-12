@@ -28,10 +28,10 @@
     }
     public class InventoryShop
     {
-        private MessageBroker broker;
+        private EventBroker broker;
         private Dictionary<string, InventoryItem> itemsForSale;
 
-        public InventoryShop(MessageBroker broker)
+        public InventoryShop(EventBroker broker)
         {
             this.broker = broker;
             itemsForSale = new Dictionary<string, InventoryItem>();
