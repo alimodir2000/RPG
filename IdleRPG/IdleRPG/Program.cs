@@ -1,4 +1,6 @@
-﻿namespace IdleRPG
+﻿using System;
+
+namespace IdleRPG
 {
     internal class Program
     {
@@ -7,4 +9,6 @@
             Console.WriteLine("Hello, World!");
         }
     }
+
+
 }
