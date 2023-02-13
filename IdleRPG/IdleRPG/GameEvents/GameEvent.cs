@@ -15,12 +15,31 @@ namespace IdleRPG.GameEvents
     public class AttackEvent : GameEvent
     {
         public Character Opponent { get; set; }
+        public int Damage { get; set; }
     }
 
     public class LevelupEvent : GameEvent
     {
         public int Level { get; set; }
     }
+
+
+    public class DieEvent : GameEvent
+    {
+      
+    }
+
+    public class FightLost : GameEvent
+    {
+
+    }
+
+    public class FightWon : GameEvent
+    {
+
+    }
+
+
 
     public class BuyInventoryEvent : GameEvent
     {
