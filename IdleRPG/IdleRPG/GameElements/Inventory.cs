@@ -2,20 +2,24 @@
 {
     public class Inventory
     {
-        private List<InventoryItem> items;
-        private int limit;
+
+
+        private List<InventoryItem> _items;
+        public int Limit { get; private set; }
+
+        public int Count => _items.Count;
 
         public Inventory(int limit)
         {
-            items = new List<InventoryItem>();
-            this.limit = limit;
+            _items = new List<InventoryItem>();
+            this.Limit = limit;
         }
 
         public bool AddItem(InventoryItem item)
         {
-            if (items.Count < limit)
+            if (_items.Count < Limit)
             {
-                items.Add(item);
+                _items.Add(item);
                 return true;
             }
 
@@ -24,13 +28,16 @@
 
         public bool RemoveItem(InventoryItem item)
         {
-            return items.Remove(item);
+            return _items.Remove(item);
         }
 
-        public List<InventoryItem> GetItems()
+        public void RestItems()
         {
-            return items;
+            _items.Clear();
         }
+
+        public List<InventoryItem> Items => _items;
+       
     }
 
 }

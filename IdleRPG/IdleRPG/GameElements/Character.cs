@@ -27,79 +27,20 @@ namespace IdleRPG.GameElements
         public int Health { get; set; }
         public Inventory Inventory { get; set; }
         public bool IsDead { get; set; } = false;
-        public int Gold { get; set; }
+        public int Gold { get; set; } = 100;
         public int FightingPoint { get; set; }
-        public int TotalGold => Gold + FightingPoint / 5;
-
+        public int TotalGold => Gold;
 
         public int OverAllHealth => Health + Armor.Defense;
 
         public void SubscribeEvents()
         {
-            EventBroker.Instance.OfType<AttackEvent>().
-             Where(x => Id == x.Opponent.Id).Subscribe(attack =>
-             {
-                 Random random = new Random();
-                 bool isDefensing = random.Next(1, 10) % 3 == 0 ? true : false;
+            EventBroker.Instance.OfType<AttackEvent>().Where(x => Id == x.Opponent.Id).Subscribe(AttackEventHanlder);
+            EventBroker.Instance.OfType<PlayerDieEvent>().Where(x => Id == x.Character.Id).Subscribe(DieEventHandler);
 
-                 attack.Damage -= Defense;
-                 if (attack.Damage <= 0)
-                 {
-                     Console.WriteLine($"{Name} completely defended attacker {attack.Character.Name}");
-                     return;
-                 }
-                 else
-                 {
-                     Console.WriteLine($"{Name} defended attacker {attack.Character.Name} by {Defense} points");
-                 }
-
-                 if (Armor.Defense > 0)
-                 {
-                     var armorHealth = Armor.Defense - attack.Damage;
-                     if (armorHealth < 0)
-                     {
-                         Armor.Defense = 0;
-                         Console.WriteLine($"{Name}'s armor destroyed!");
-                     }
-                     else
-                     {
-                         Armor.Defense = armorHealth;
-                     }
-                 }
-                 else
-                 {
-                     Health -= attack.Damage;
-                     if (Health <= 0)
-                     {
-                         EventBroker.Instance.Publish(new DieEvent() { Character = this });
-                         //Console.WriteLine($"{Name} Died!");
-                         return;
-                     }
-                 }
-
-                 Console.WriteLine($"{Name} damaged by {attack.Damage} points from {attack.Character.Name}, Health: {OverAllHealth}");
-
-             });
-
-
-            EventBroker.Instance.OfType<DieEvent>().Where(x => Id == x.Character.Id).Subscribe(deadPlayer =>
-               {
-                   IsDead = true;
-                   if(Class == Class.Main)
-                   {
-                       
-                       Console.WriteLine($"GameOver!");
-                       EventBroker.Instance.Publish(new FightLost() { Character = this });
-                   }
-                   else
-                   {
-                       Console.WriteLine($"{deadPlayer.Character.Name} is Dead!");
-                   }
-
-               });
         }
 
-        public Character(string name, int level, Weapon weapon, Armor armor, int strength, int defense, int dexterity, int intelligence, int attackSpeed, int spellPower, int health, Class @class)
+        public Character(string name, int level, Weapon weapon, Armor armor, int strength, int defense, int dexterity, int intelligence, int attackSpeed, int spellPower, int health, int inventoryLimit, Class @class)
         {
             Name = name;
             Level = level;
@@ -115,8 +56,13 @@ namespace IdleRPG.GameElements
             Id = Guid.NewGuid();
             Class = @class;
 
+            if(Class == Class.Main)
+            {
+                Inventory = new Inventory(inventoryLimit);
+            }
+
             SubscribeEvents();
-            
+
         }
 
         public void Attack(Character enemy)
@@ -127,11 +73,31 @@ namespace IdleRPG.GameElements
             EventBroker.Instance.Publish(new AttackEvent() { Character = this, Damage = damage, Opponent = enemy });
         }
 
-        public void TakeDamage(int damage)
+        public void ResetInventory()
         {
-            int finalDamage = damage - Defense;
-            Health -= finalDamage;
-            //Broadcast(new DamageTakenEvent(this, finalDamage));
+            Inventory.RestItems();
+        }
+
+        public void LevelUp(int loot)
+        {
+            Level++;
+            Strength++;
+            Defense++;
+            Dexterity++;
+            Intelligence++;
+            AttackSpeed++;
+            SpellPower++;
+
+            if (Level % 5 == 0)
+            {
+                Armor.Defense++;
+                Weapon.Damage++;
+            }
+
+            Gold += loot;
+
+            Inventory.AddItem(InventoryShop.Instance.Rewarde(Level));
+            
         }
 
         public override string ToString()
@@ -151,6 +117,66 @@ namespace IdleRPG.GameElements
             str += $"Weapon:{Weapon.Name} {Environment.NewLine}";
             str += $"Armor:{Armor.Name} {Environment.NewLine}";
             return str;
+        }
+
+
+
+        private void AttackEventHanlder(AttackEvent attackEventData)
+        {
+            Random random = new Random();
+            bool isDefensing = random.Next(1, 10) % 3 == 0 ? true : false;
+
+            attackEventData.Damage -= Defense;
+            if (attackEventData.Damage <= 0)
+            {
+                Console.WriteLine($"{Name} completely defended attacker {attackEventData.Character.Name}");
+                return;
+            }
+            else
+            {
+                Console.WriteLine($"{Name} defended attacker {attackEventData.Character.Name} by {Defense} points");
+            }
+
+            if (Armor.Defense > 0)
+            {
+                var armorHealth = Armor.Defense - attackEventData.Damage;
+                if (armorHealth < 0)
+                {
+                    Armor.Defense = 0;
+                    Console.WriteLine($"{Name}'s armor destroyed!");
+                }
+                else
+                {
+                    Armor.Defense = armorHealth;
+                }
+            }
+            else
+            {
+                Health -= attackEventData.Damage;
+                if (Health <= 0)
+                {
+                    EventBroker.Instance.Publish(new PlayerDieEvent() { Character = this });
+                    //Console.WriteLine($"{Name} Died!");
+                    return;
+                }
+            }
+
+            Console.WriteLine($"{Name} damaged by {attackEventData.Damage} points from {attackEventData.Character.Name}, Health: {OverAllHealth}");
+        }
+
+        private void DieEventHandler(PlayerDieEvent playerDieEventData)
+        {
+            IsDead = true;
+            if (Class == Class.Main)
+            {
+
+                Console.WriteLine($"GameOver!");
+                EventBroker.Instance.Publish(new FightLostEvent() { Character = this });
+            }
+            else
+            {
+                Console.WriteLine($"{playerDieEventData.Character.Name} is Dead!");
+            }
         }
     }
 

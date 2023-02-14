@@ -1,13 +1,12 @@
-﻿using IdleRPG.GameEvents;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using System.Xml.Serialization;
 
-namespace IdleRPG.GameElements
+namespace IdleRPG.GameEvents
 {
     public class EventBroker : IObservable<GameEvent>
     {
         private static Subject<GameEvent> _subscribers;
-        private static EventBroker _instance;       
+        private static EventBroker _instance;
 
         private EventBroker()
         {
@@ -26,10 +25,10 @@ namespace IdleRPG.GameElements
             }
         }
 
-        
+
         public IDisposable Subscribe(IObserver<GameEvent> observer)
         {
-            return _subscribers.Subscribe(observer); 
+            return _subscribers.Subscribe(observer);
         }
 
         public void Publish(GameEvent gameEvent)
