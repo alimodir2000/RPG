@@ -3,6 +3,10 @@ using System.Xml.Serialization;
 
 namespace IdleRPG.GameEvents
 {
+    /// <summary>
+    /// This class facsilate the communication amonge game classes
+    /// It is a singleton
+    /// </summary>
     public class EventBroker : IObservable<GameEvent>
     {
         private static Subject<GameEvent> _subscribers;

@@ -1,13 +1,14 @@
-﻿using IdleRPG.GameEvents;
+﻿using IdleRPG.GameElements;
+using IdleRPG.GameEvents;
 
-namespace IdleRPG.GameElements
+namespace IdleRPG
 {
 
 
-    public class InventoryShop
+    public class GameInventoryShop
     {
 
-        private static InventoryShop _instance;
+        private static GameInventoryShop _instance;
         private Random _random;
 
 
@@ -15,12 +16,12 @@ namespace IdleRPG.GameElements
         private List<Weapon> _weapons;
         private List<Armor> _armors;
 
-        public static InventoryShop Instance
+        public static GameInventoryShop Instance
         {
             get
             {
                 if (_instance == null)
-                    _instance = new InventoryShop();
+                    _instance = new GameInventoryShop();
                 return _instance;
             }
         }
@@ -46,7 +47,7 @@ namespace IdleRPG.GameElements
 
             player.ResetInventory();
 
-            if(_random.Next(100)%2 == 0)
+            if (_random.Next(100) % 2 == 0)
             {
                 BuyWeapon(player);
                 BuyArmor(player);
@@ -54,7 +55,7 @@ namespace IdleRPG.GameElements
             else
             {
                 BuyArmor(player);
-                BuyWeapon(player);                
+                BuyWeapon(player);
             }
 
 
@@ -104,7 +105,7 @@ namespace IdleRPG.GameElements
         }
 
 
-        private InventoryShop()
+        private GameInventoryShop()
         {
             _random = new Random();
             _rewardItems = new List<InventoryItem>()

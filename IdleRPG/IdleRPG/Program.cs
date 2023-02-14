@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IdleRPG.GameEvents;
+using System;
 using System.Reflection.Emit;
 
 namespace IdleRPG
@@ -6,12 +7,14 @@ namespace IdleRPG
     internal class Program
     {
 
-        
+       
 
         
         static void Main(string[] args)
         {
-            GameManager.Instance.SimulateCombate();
+            var instance = CombatManager.Instance;
+            
+            EventBroker.Instance.Publish(new StartFightingEvent() { Character = null});
         }
 
 

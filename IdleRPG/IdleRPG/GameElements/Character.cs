@@ -96,7 +96,7 @@ namespace IdleRPG.GameElements
 
             Gold += loot;
 
-            Inventory.AddItem(InventoryShop.Instance.Rewarde(Level));
+            Inventory.AddItem(GameInventoryShop.Instance.Rewarde(Level));
             
         }
 
@@ -168,10 +168,8 @@ namespace IdleRPG.GameElements
         {
             IsDead = true;
             if (Class == Class.Main)
-            {
-
-                Console.WriteLine($"GameOver!");
-                EventBroker.Instance.Publish(new FightLostEvent() { Character = this });
+            {               
+                EventBroker.Instance.Publish(new FightLostEvent() { Character = this, Message = "Game Over!" });
             }
             else
             {

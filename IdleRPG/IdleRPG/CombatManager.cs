@@ -4,12 +4,12 @@ using System.Reactive.Linq;
 
 namespace IdleRPG
 {
-    public class GameManager
+    public class CombatManager
     {
-        private static GameManager _instance;
+        private static CombatManager _instance;
         
         private IEnumerable<Character> _enemies;
-        private CancellationTokenSource _cts;
+        private static CancellationTokenSource _cts;
 
 
         private const int _mainPlayerInitialSpellPower = 10;
@@ -23,10 +23,10 @@ namespace IdleRPG
 
 
         private const int _attackerInitialSpellPower = 0;
-        private const int _attackerInitialMaxHealth = 25;
+        private const int _attackerInitialMaxHealth = 40;
         private const int _attackerInitialLevel = 1;
-        private const int _attackerInitialStrength = 15;
-        private const int _attackerInitialDefense = 5;
+        private const int _attackerInitialStrength = 25;
+        private const int _attackerInitialDefense = 15;
         private const int _attackerInitialDexterity = 1;
         private const int _attackerInitialIntelligence = 1;
         private const int _attackerInitialAttackSpeed = 2;
@@ -38,19 +38,19 @@ namespace IdleRPG
         public int Level => MainPlayer.Level;
         public Character MainPlayer { get; private set; }
 
-        private GameManager()
+        private CombatManager()
         {
             MainPlayer = InitiateMainPlayer("Sub-Zerro");
             EventBroker.Instance.OfType<FightLostEvent>().Subscribe(FightLostEventHanlder);
             EventBroker.Instance.OfType<StartFightingEvent>().Subscribe(StartFightingEventHandler);
         }
-        public static GameManager Instance
+        public static CombatManager Instance
         {
             get
             {
 
                 if (_instance == null)
-                    _instance = new GameManager();
+                    _instance = new CombatManager();
                 return _instance;
             }
         }
@@ -61,8 +61,8 @@ namespace IdleRPG
             return new Character(
                 name,                                      //Name
                 _mainPlayerInitialLevel,                  //Level
-                InventoryShop.Instance.GetFreeWeapon(),   //Weapon
-                InventoryShop.Instance.GetFreeArmor(),    //Armor
+                GameInventoryShop.Instance.GetFreeWeapon(),   //Weapon
+                GameInventoryShop.Instance.GetFreeArmor(),    //Armor
                 _mainPlayerInitialStrength,               //Strength
                 _mainPlayerInitialDefense,                //Defence
                 _mainPlayerInitialDexterity,              //Dexterity
@@ -136,11 +136,15 @@ namespace IdleRPG
             catch (OperationCanceledException e)
             {
                 //Console.WriteLine(e.Message);
+                //_cts = null;
             }
             finally
             {
-                _cts.Dispose();
+                //_cts.Dispose();
             }
+
+
+
 
             var alives = _enemies.Count(x => x.IsDead == false);
             if (alives == 0)
@@ -154,12 +158,13 @@ namespace IdleRPG
                 if(MainPlayer.Inventory.Count == MainPlayer.Inventory.Limit )
                 {
                     Console.WriteLine("It is Time to Sell Items");
-                    InventoryShop.Instance.SellInventories(MainPlayer);
+                    GameInventoryShop.Instance.SellInventories(MainPlayer);
                     
                 }
                 else
                 {
                     EventBroker.Instance.Publish(new StartFightingEvent() { Character = this.MainPlayer });
+                    
                 }
                 
 
@@ -167,19 +172,18 @@ namespace IdleRPG
 
         }       
 
+
+        private void RestoreHealth() => MainPlayer.Health = _mainPlayerInitialMaxHealth;
+
+
         private void FightLostEventHanlder(FightLostEvent lostFightEventData)
         {
+            _cts?.Cancel();
             Console.WriteLine("-------------------Level Result--------------");
             Console.WriteLine(lostFightEventData.Character.ToString());
-            foreach (var enemy in _enemies)
-            {
-                string isDead = enemy.IsDead ? "Dead" : enemy.OverAllHealth.ToString();
-                Console.WriteLine($"{enemy.Name} : {isDead}");
-            }
-            _cts?.Cancel();
+            Console.WriteLine($"{lostFightEventData.Message}");
+            RestoreHealth();
             SimulateCombate();
-
-
 
         }
 
@@ -192,6 +196,7 @@ namespace IdleRPG
         }
         private void StartFightingEventHandler(StartFightingEvent startFightingEventData)
         {
+            RestoreHealth();
             SimulateCombate();
         }
     }
