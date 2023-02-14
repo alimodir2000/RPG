@@ -4,6 +4,11 @@ using System.Reactive.Linq;
 
 namespace IdleRPG
 {
+    /// <summary>
+    /// This class represents and simulate fights, initiate the player and the attackers
+    /// the fighit is designed to simulate combat between main player and set of attackers which generates based on the level
+    /// it is also a singleton
+    /// </summary>
     public class CombatManager
     {
         private static CombatManager _instance;
@@ -61,8 +66,8 @@ namespace IdleRPG
             return new Character(
                 name,                                      //Name
                 _mainPlayerInitialLevel,                  //Level
-                GameInventoryShop.Instance.GetFreeWeapon(),   //Weapon
-                GameInventoryShop.Instance.GetFreeArmor(),    //Armor
+                GameInventoryManager.Instance.GetFreeWeapon(),   //Weapon
+                GameInventoryManager.Instance.GetFreeArmor(),    //Armor
                 _mainPlayerInitialStrength,               //Strength
                 _mainPlayerInitialDefense,                //Defence
                 _mainPlayerInitialDexterity,              //Dexterity
@@ -74,6 +79,10 @@ namespace IdleRPG
                 Class.Main);                              //Class   
         }
 
+        /// <summary>
+        /// Generates the enemy based on the level
+        /// </summary>
+        /// <returns></returns>
         IEnumerable<Character> GetEnemis()
         {
 
@@ -99,6 +108,10 @@ namespace IdleRPG
             }
             return enemies;
         }
+
+        /// <summary>
+        /// Simulate combat
+        /// </summary>
         public void SimulateCombate()
         {
             _cts = new CancellationTokenSource();
@@ -158,7 +171,7 @@ namespace IdleRPG
                 if(MainPlayer.Inventory.Count == MainPlayer.Inventory.Limit )
                 {
                     Console.WriteLine("It is Time to Sell Items");
-                    GameInventoryShop.Instance.SellInventories(MainPlayer);
+                    GameInventoryManager.Instance.SellInventories(MainPlayer);
                     
                 }
                 else
@@ -173,9 +186,16 @@ namespace IdleRPG
         }       
 
 
+        /// <summary>
+        /// Restore player health for new level and combat
+        /// </summary>
+
         private void RestoreHealth() => MainPlayer.Health = _mainPlayerInitialMaxHealth;
 
-
+        /// <summary>
+        /// Chracter die event handler, game manager will notice from chracter class throw game event broker
+        /// </summary>
+        /// <param name="lostFightEventData"></param>
         private void FightLostEventHanlder(FightLostEvent lostFightEventData)
         {
             _cts?.Cancel();
@@ -187,13 +207,11 @@ namespace IdleRPG
 
         }
 
-        private void LevelUpEventHandler(LevelupEvent levelupEventData)
-        {
-             
-            //MainPlayer.LevelUp(levelupEventData.Loot);
-            //if(MainPlayer.)
-            
-        }
+        /// <summary>
+        /// This event handler initate fight from other components
+        /// </summary>
+        /// <param name="startFightingEventData"></param>
+       
         private void StartFightingEventHandler(StartFightingEvent startFightingEventData)
         {
             RestoreHealth();

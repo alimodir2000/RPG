@@ -4,11 +4,15 @@ using IdleRPG.GameEvents;
 namespace IdleRPG
 {
 
-
-    public class GameInventoryShop
+    /// <summary>
+    /// This class represents Inventory shop for the game
+    /// It manages rewards as well as weapons and armors.
+    /// It is Singleton
+    /// </summary>
+    public class GameInventoryManager
     {
 
-        private static GameInventoryShop _instance;
+        private static GameInventoryManager _instance;
         private Random _random;
 
 
@@ -16,17 +20,21 @@ namespace IdleRPG
         private List<Weapon> _weapons;
         private List<Armor> _armors;
 
-        public static GameInventoryShop Instance
+        public static GameInventoryManager Instance
         {
             get
             {
                 if (_instance == null)
-                    _instance = new GameInventoryShop();
+                    _instance = new GameInventoryManager();
                 return _instance;
             }
         }
 
-
+        /// <summary>
+        /// Assign Rewards based on the Level
+        /// </summary>
+        /// <param name="Level"></param>
+        /// <returns></returns>
         public InventoryItem Rewarde(int Level)
         {
 
@@ -34,6 +42,11 @@ namespace IdleRPG
             return _rewardItems[ind];
         }
 
+        /// <summary>
+        /// Allow Character to sell their inventories
+        /// It also check for avaiablity of weopen and armor for purchasing
+        /// </summary>
+        /// <param name="player"></param>
         public void SellInventories(Character player)
         {
             Console.WriteLine($"Inventory Shop: Welcome {player.Name}! How can I help you?");
@@ -65,7 +78,10 @@ namespace IdleRPG
             EventBroker.Instance.Publish(new StartFightingEvent() { Character = player });
 
         }
-
+        /// <summary>
+        /// Check the avaiablity of weapons for character and exchange in case!
+        /// </summary>
+        /// <param name="player"></param>
         public void BuyWeapon(Character player)
         {
             var avaliableWeapons = _weapons.Where(x => x.Id != player.Weapon.Id && x.Cost != 0).ToList();
@@ -81,10 +97,14 @@ namespace IdleRPG
                 if (player.Gold < 0)
                     player.Gold = 0;
                 Console.WriteLine($"{player.Name} Gold is : {player.Gold}");
+                player.Weapon = newWeapon;
 
             }
         }
-
+        /// <summary>
+        ///  Check the avaiablity of armors for character and exchange in case!
+        /// </summary>
+        /// <param name="player"></param>
         public void BuyArmor(Character player)
         {
             var avaliableArmors = _armors.Where(x => x.Id != player.Armor.Id && x.Cost != 0).ToList();
@@ -100,12 +120,13 @@ namespace IdleRPG
                 if (player.Gold < 0)
                     player.Gold = 0;
                 Console.WriteLine($"{player.Name} Gold is : {player.Gold}");
+                player.Armor = newArmors;
 
             }
         }
 
 
-        private GameInventoryShop()
+        private GameInventoryManager()
         {
             _random = new Random();
             _rewardItems = new List<InventoryItem>()

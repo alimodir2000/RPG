@@ -96,7 +96,7 @@ namespace IdleRPG.GameElements
 
             Gold += loot;
 
-            Inventory.AddItem(GameInventoryShop.Instance.Rewarde(Level));
+            Inventory.AddItem(GameInventoryManager.Instance.Rewarde(Level));
             
         }
 
